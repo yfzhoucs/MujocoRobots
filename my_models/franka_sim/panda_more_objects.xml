@@ -1,0 +1,415 @@
+<!-- NOTE: the joint limits and references have not been set. If using -->
+<!-- this to control a real ur5, make sure they align with the values -->
+<!-- used in the real arm firmware -->
+<!-- Masses and center-of-masses taken from: www.universal-robots.com/
+        how-tos-and-faqs/faq/ur-faq/
+        parameters-for-calculations-of-kinematics-and-dynamics-45257/ -->
+<!-- Principle moments of inertia not provided, set all to 0.1. -->
+<!-- Inertia parameters provided at link below, not sure of accuracy so not used:
+        http://hades.mech.northwestern.edu/images/4/49/UR5-URDF.pdf -->
+<mujoco model="panda">
+    <compiler angle="radian" meshdir="meshes" balanceinertia="true"/>
+
+    <size njmax="8000" nconmax="4000"/>
+
+    <default>
+        <light castshadow="false" diffuse="1 1 1" />
+        <!-- <camera fovy="20" pos="0 0 0" mode="fixed"/> -->
+        <!-- <camera mode="fixed" fovy="45" pos="-2 0 0.3" xyaxes="0 -1 0 0 0 1"/> -->
+    </default>
+
+    <custom>
+        <numeric name="START_ANGLES" data="0 0.229 0 -1.46 0 0.53 0 0.04"/>
+        <numeric name="N_GRIPPER_JOINTS" data="1" />
+    </custom>
+
+    <asset>
+        <!-- arm models -->
+        <mesh name="link0_col" file="../franka_sim/meshes/collision/link0.stl"/>
+        <mesh name="link1_col" file="../franka_sim/meshes/collision/link1.stl"/>
+        <mesh name="link2_col" file="../franka_sim/meshes/collision/link2.stl"/>
+        <mesh name="link3_col" file="../franka_sim/meshes/collision/link3.stl"/>
+        <mesh name="link4_col" file="../franka_sim/meshes/collision/link4.stl"/>
+        <mesh name="link5_col" file="../franka_sim/meshes/collision/link5.stl"/>
+        <mesh name="link6_col" file="../franka_sim/meshes/collision/link6.stl"/>
+        <mesh name="link7_col" file="../franka_sim/meshes/collision/link7.stl"/>
+        <mesh name="hand_col" file="../franka_sim/meshes/collision/hand.stl"/>
+        <mesh name="link0_viz" file="../franka_sim/meshes/visual/link0.stl"/>
+        <mesh name="link1_viz" file="../franka_sim/meshes/visual/link1.stl"/>
+        <mesh name="link2_viz" file="../franka_sim/meshes/visual/link2.stl"/>
+        <mesh name="link3_viz" file="../franka_sim/meshes/visual/link3.stl"/>
+        <mesh name="link3_dark_viz" file="../franka_sim/meshes/visual/link3_dark.stl" scale="1.01 1.01 1.01"/>
+        <mesh name="link4_viz" file="../franka_sim/meshes/visual/link4.stl"/>
+        <mesh name="link4_dark_viz" file="../franka_sim/meshes/visual/link4_dark.stl" scale="1.01 1.01 1.01"/>
+        <mesh name="link5_viz" file="../franka_sim/meshes/visual/link5.stl"/>
+        <mesh name="link5_dark_viz" file="../franka_sim/meshes/visual/link5_dark.stl" scale="1.01 1.01 1.01"/>
+        <mesh name="link6_viz" file="../franka_sim/meshes/visual/link6.stl"/>
+        <mesh name="link6_dark_viz" file="../franka_sim/meshes/visual/link6_dark.stl" scale="1.01 1.01 1.01"/>
+        <mesh name="link7_viz" file="../franka_sim/meshes/visual/link7.stl"/>
+        <mesh name="link7_dark_viz" file="../franka_sim/meshes/visual/link7_dark.stl" scale="1.01 1.01 1.01"/>
+        <mesh name="hand_viz" file="../franka_sim/meshes/visual/hand.stl"/>
+
+        <mesh file="objects/bread.stl" name="bread_mesh" scale="1 1 1.25"/>
+        <texture file="meshes/objects/textures/bread.png" type="2d" name="tex-bread" />
+        <material name="bread" reflectance="0.7" texrepeat="15 15" texture="tex-bread" texuniform="true"/>
+
+        <mesh file="objects/bottle.stl" name="bottle_mesh"/>
+        <!-- <texture type="skybox" file="meshes/objects/textures/glass.png" name="tex-glass"/> -->
+        <texture type="2d" file="meshes/objects/textures/glass.png" name="tex-glass"/>
+        <material name="glass" reflectance="0.5" texrepeat="5 5" texture="tex-glass" texuniform="true"/>
+
+        <mesh file="objects/can.msh" name="can_mesh"/>
+        <texture file="meshes/objects/textures/coke_can.png" name="tex-can" type="2d"/>
+        <material name="coke" reflectance="0.7" texrepeat="5 5" texture="tex-can" texuniform="true"/>
+
+        <texture file="meshes/objects/textures/pepsi_can.png" name="tex-pepsi" type="2d"/>
+        <material name="pepsi" reflectance="0.7" texrepeat="5 5" texture="tex-pepsi" texuniform="true"/>
+
+        <mesh file="objects/cereal.msh" name="cereal_mesh"/>
+        <texture type="2d" file="meshes/objects/textures/cereal.png" rgb1="1 1 1" name="tex-cereal"/>
+        <material name="cereal" reflectance="0.5" texrepeat="1 1" texture="tex-cereal" texuniform="false"/>
+
+        <mesh file="objects/lemon.msh" name="lemon_mesh" scale="1.5 1 1"/>
+        <texture file="meshes/objects/textures/lemon.png" type="2d" name="tex-lemon"/>
+        <material name="lemon" reflectance="0.7" texrepeat="60 50" texture="tex-lemon" texuniform="true"/>
+
+        <mesh file="objects/milk.msh" name="milk_mesh" scale="0.9 0.9 0.9"/>
+        <texture file="meshes/objects/textures/ceramic.png" name="tex-ceramic" type="2d"/>
+        <material name="ceramic" reflectance="0.5" texrepeat="1 1" texture="tex-ceramic" texuniform="true"/>
+
+        <texture file="meshes/objects/textures/red-wood.png" type="cube" name="red-wood" />
+        <material name="plate_mat" texture="red-wood" texrepeat="3 3" specular="0.4" shininess="0.1" />
+
+        <texture file="meshes/objects/textures/steel-scratched.png" type="cube" name="steel-metal"/>
+        <material name="smetal" reflectance="1.0" shininess="1.0" specular="1.0" texrepeat="1 1" texture="steel-metal" texuniform="true"/>
+
+        <texture file="meshes/objects/textures/brass-ambra.png" type="cube" name="brass-metal"/>
+        <material name="bmetal"  reflectance="1.0" shininess="1.0" specular="1.0" texrepeat="1 1" texture="brass-metal" texuniform="true"/>
+
+        <mesh name="004_sugar_box" file="objects/004_sugar_box.msh" scale="1 1 1"/>
+        <texture name="004_sugar_box" type="2d" file="meshes/objects/textures/004_sugar_box.png"/>
+        <material name="004_sugar_box" texture="004_sugar_box"/>
+
+        <mesh name="002_master_chef_can" file="objects/002_master_chef_can.msh" scale="1 1 1"/>
+        <texture name="002_master_chef_can" type="2d" file="meshes/objects/textures/002_master_chef_can.png"/>
+        <material name="002_master_chef_can" texture="002_master_chef_can"/>
+
+        <mesh name="003_cracker_box" file="objects/003_cracker_box.msh" scale="1 1 1"/>
+        <texture name="003_cracker_box" type="2d" file="meshes/objects/textures/003_cracker_box.png"/>
+        <material name="003_cracker_box" texture="003_cracker_box"/>
+
+        <mesh name="005_tomato_soup_can" file="objects/005_tomato_soup_can.msh" scale="1 1 1"/>
+        <texture name="005_tomato_soup_can" type="2d" file="meshes/objects/textures/005_tomato_soup_can.png"/>
+        <material name="005_tomato_soup_can" texture="005_tomato_soup_can"/>
+
+        <mesh name="006_mustard_bottle" file="objects/006_mustard_bottle.msh" scale="1 1 1"/>
+        <texture name="006_mustard_bottle" type="2d" file="meshes/objects/textures/006_mustard_bottle.png"/>
+        <material name="006_mustard_bottle" texture="006_mustard_bottle"/>
+
+        <mesh name="007_tuna_fish_can" file="objects/007_tuna_fish_can.msh" scale="1 1 1"/>
+        <texture name="007_tuna_fish_can" type="2d" file="meshes/objects/textures/007_tuna_fish_can.png"/>
+        <material name="007_tuna_fish_can" texture="007_tuna_fish_can"/>
+
+        <mesh name="008_pudding_box" file="objects/008_pudding_box.msh" scale="1 1 1"/>
+        <texture name="008_pudding_box" type="2d" file="meshes/objects/textures/008_pudding_box.png"/>
+        <material name="008_pudding_box" texture="008_pudding_box"/>
+
+        <mesh name="009_gelatin_box" file="objects/009_gelatin_box.msh" scale="1 1 1"/>
+        <texture name="009_gelatin_box" type="2d" file="meshes/objects/textures/009_gelatin_box.png"/>
+        <material name="009_gelatin_box" texture="009_gelatin_box"/>
+
+        <mesh name="010_potted_meat_can" file="objects/010_potted_meat_can.msh" scale="1 1 1"/>
+        <texture name="010_potted_meat_can" type="2d" file="meshes/objects/textures/010_potted_meat_can.png"/>
+        <material name="010_potted_meat_can" texture="010_potted_meat_can"/>
+
+        <mesh name="035_power_drill" file="objects/035_power_drill.msh" scale="1 1 1"/>
+        <texture name="035_power_drill" type="2d" file="meshes/objects/textures/035_power_drill.png"/>
+        <material name="035_power_drill" texture="035_power_drill"/>
+    </asset>
+
+
+
+    <worldbody>
+        <geom name="floor_grey_tile" pos="0 0 -0.001" size="0.75 0.75 0.05" type="plane" material="tile"/>
+        <camera name='111' fovy="60" pos="0 1.5 1" euler="-1 0 3.14" mode="fixed"/>
+
+        <light directional="true" pos="-0.5 0.5 3" dir="0 0 -1" />
+
+        <body name="base_link" pos="0 -0.3 0">
+            <geom name="link0" type="mesh" mesh="link0" pos="0 0 0"/>
+
+            <body name="link1" pos="0 0 0.0213">
+                <joint name="joint0" axis="0 0 1" pos="0 0 0"/>
+                <inertial pos="0 -0.02561 0.00193" mass="3.761" diaginertia="0.1 0.1 0.1"/>
+                <geom name="link1_connector" type="mesh" mesh="link1_connector" pos="0 0 0" material="black"
+                    conaffinity="32" contype="32"/>
+                <geom name="link1" type="mesh" mesh="link1" pos="0 0 0.008" material="grey"/>
+                <geom name="link1_cap" type="mesh" mesh="link1_cap" pos="0 0 .1025" material="blue"/>
+
+                <body name="link2" pos="-0.0663 0 0.0679">
+                    <joint name="joint1" axis="-1 0 0" pos="0 0 0"/>
+                    <inertial pos="-0.04706 0 0.2125" mass="8.058" diaginertia="0.1 0.1 0.1"/>
+                    <geom name="link2_connector" type="mesh" mesh="link2_connector" pos="0 0 0" material="black"
+                        conaffinity="32" contype="32"/>
+                    <geom name="link2" type="mesh" mesh="link2" pos="-0.008 0 0" material="grey"/>
+                    <geom name="link2_cap" type="mesh" mesh="link2_cap" pos="-0.1015 0 -0.0025" material="blue"/>
+                    <geom name="link2_tube" type="mesh" mesh="link2_tube" pos="-0.0679 0 0.066" material="silver"/>
+
+                    <body name="link3" pos="-0.008 0 0.425">
+                        <joint name="joint2" axis="1 0 0" pos="0 0 0"/>
+                        <inertial pos="0.0478 0 0.15" mass="2.846" diaginertia="0.1 0.1 0.1"/>
+                        <geom name="link3a_connector" type="mesh" mesh="link3a_connector" pos="0 0 0" material="black"
+                            conaffinity="32" contype="32"/>
+                        <geom name="link3a" type="mesh" mesh="link3a" pos="0.008 0 0" material="grey"/>
+                        <geom name="link3_tube" type="mesh" mesh="link3_tube" pos="0.059 0 0.066" material="silver"/>
+                        <geom name="link3b_connector" type="mesh" mesh="link3b_connector" pos="0.059 0 0.3418" material="black" />
+                        <geom name="link3b_connector2" type="mesh" mesh="link3b_connector2" pos="0.059 0 0.34" material="grey"
+                            conaffinity="32" contype="32"/>
+                        <geom name="link3b" type="mesh" mesh="link3b" pos="0.059 0 0.347" material="grey"/>
+                        <geom name="link3_cap" type="mesh" mesh="link3_cap" pos="0.0837 0 0.392" material="blue"/>
+
+                        <body name="link4" pos="0.0173 0 0.3922">
+                            <joint name="joint3" axis="-1 0 0" pos="0 0 0"/>
+                            <inertial pos="-0.05796 -0.0018 0" mass="1.37" diaginertia="0.1 0.1 0.1"/>
+                            <geom name="link4_connector" type="mesh" mesh="link4_connector" pos="0 0 0" material="black"
+                                conaffinity="32" contype="32"/>
+                            <geom name="link4" type="mesh" mesh="link4" pos="-0.008 0 0" material="grey"/>
+                            <geom name="link4_cap" type="mesh" mesh="link4_cap" pos="-0.05325 0 -0.0247" material="blue"/>
+
+                            <body name="link5" pos="-0.05325 0 0.04165">
+                                <joint name="joint4" axis="0 0 1" pos="0 0 0"/>
+                                <inertial pos="0.0018 0 0.01634" mass="1.3" diaginertia="0.1 0.1 0.1"/>
+                                <geom name="link5_connector" type="mesh" mesh="link5_connector" pos="0 0 0" material="black"
+                                    conaffinity="32" contype="32"/>
+                                <geom name="link5" type="mesh" mesh="link5" pos="0 0 0.0079" material="grey"/>
+                                <geom name="link5_cap" type="mesh" mesh="link5_cap" pos="0.025 0 0.053" material="blue"/>
+
+                                <body name="link6" pos="-0.04165 0 0.05305">
+                                    <joint name="joint5" axis="-1 0 0" pos="0 0 0"/>
+                                    <inertial pos="-0.038841 0 0" mass="0.365" diaginertia="0.1 0.1 0.1"/>
+                                    <geom name="link6_connector" type="mesh" mesh="link6_connector" pos="0 0 0" material="black"
+                                        conaffinity="32" contype="32"/>
+                                    <geom name="link6" type="mesh" mesh="link6" pos="-0.008 0 0" material="silver"/>
+
+                                    <body name="EE" pos="-0.177 0 0" euler="0 0 0"/>
+
+                                    <body name="robotiq_85_adapter_link" pos="-0.04 0 0" euler="0 -1.57 0">
+                                        <!-- <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1" /> -->
+                                        <body name="eef" pos="0 0 0.145" quat="0.707105 0 0 -0.707105">
+                                            <!-- <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0.5" type="sphere" group="1"/> -->
+                                            <site name="ee_x" pos="0.1 0 0" size="0.005 .1"  quat="0.707105  0 0.707108 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
+                                            <site name="ee_y" pos="0 0.1 0" size="0.005 .1" quat="0.707105 0.707108 0 0" rgba="0 1 0 0" type="cylinder" group="1"/>
+                                            <site name="ee_z" pos="0 0 0.1" size="0.005 .1" quat="1 0 0 0" rgba="0 0 1 0" type="cylinder" group="1"/>
+                                            <!-- <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/> -->
+                                        </body>
+                                        <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
+                                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" name="hand_visual" mesh="robotiq_arg2f_base_link" />
+                                        <geom type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_base_link" name="hand_collision" />
+                                        <body name="left_outer_knuckle" pos="0 -0.0306011 0.054904" quat="0 0 0 1">
+                                            <inertial pos="0.000163875 0.0554825 -0.0100755" quat="0.920541 0.390623 -0.00362953 0.00231744" mass="0.0311462" diaginertia="5.11372e-05 4.89464e-05 4.95906e-06" />
+                                            <joint name="finger_joint" pos="0 0 0" axis="1 0 0" limited="true" range="0 0.8" />
+                                            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" name="left_outer_knuckle_visual" mesh="robotiq_arg2f_85_outer_knuckle_vis" />
+                                            <!-- <geom type="mesh" group="0" rgba="0.792157 0.819608 0.933333 1" mesh="robotiq_arg2f_85_outer_knuckle" name="left_outer_knuckle_collision" solref="0.01 0.25" /> -->
+                                            <geom pos="0 0.0315 -0.0041" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" name="left_outer_finger_visual" mesh="robotiq_arg2f_85_outer_finger_vis" />
+                                            <!-- <geom pos="0 0.0315 -0.0041" type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_outer_finger" name="left_outer_finger_collision" solref="0.01 0.25" /> -->
+                                            <body name="left_inner_finger" pos="0 0.0376 0.043">
+                                                <inertial pos="0.000199506 0.0032692 0.00175282" quat="0.933621 0.35825 -0.00273441 0.00104851" mass="0.0156391" diaginertia="1.57977e-05 1.51089e-05 1.4647e-06" />
+                                                <!-- <joint name="left_inner_finger_joint" pos="0 0 0" axis="1 0 0" limited="true" range="-0.8757 0.8757" /> -->
+                                                <joint name="left_inner_finger_joint" pos="0 0 0" axis="1 0 0" limited="true" range="-0.8757 0.8757" />
+                                                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" name="left_inner_finger_visual" mesh="robotiq_arg2f_85_inner_finger_vis" />
+                                                <!-- <geom type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_finger" name="left_inner_finger_collision" solref="0.01 0.25" /> -->
+                                                <geom size="0.011 0.003175 0.01875" pos="0 -0.0220203 0.03242" type="box" contype="1" conaffinity="1" group="1" rgba="0.9 0.9 0.9 1" name="left_fingertip_visual" solimp="0.99 0.99 0.01" solref="0.01 1"  condim="4" friction="0.8 0.8 10"/>
+                                                <!-- <geom size="0.011 0.003175 0.01875" pos="0 -0.0220203 0.03242" type="box" group="0" rgba="0.9 0.9 0.9 1" name="left_fingertip_collision" solref="0.01 0.25" /> -->
+                                                <!-- <geom size="0.010 0.001 0.01675" pos="0 -0.0245203 0.03242" type="box" group="0" name="left_fingerpad_collision" /> -->
+                                            </body>
+                                        </body>
+                                        <body name="left_inner_knuckle" pos="0 -0.0127 0.06142" quat="0 0 0 1">
+                                            <inertial pos="0.000123012 0.0507851 0.00103969" quat="0.497203 0.502496 -0.507943 0.492221" mass="0.0271177" diaginertia="2.83809e-05 2.61936e-05 2.81319e-06" />
+                                            <joint name="left_inner_knuckle_joint" pos="0 0 0" axis="1 0 0" limited="true" range="0 0.8757" />
+                                            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" name="left_inner_knuckle_visual" mesh="robotiq_arg2f_85_inner_knuckle_vis" />
+                                            <!-- <geom type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_knuckle" name="left_inner_knuckle_collision" /> -->
+                                        </body>
+                                        <body name="right_outer_knuckle" pos="0 0.0306011 0.054904">
+                                            <inertial pos="0.000163875 0.0554825 -0.0100755" quat="0.920541 0.390623 -0.00362953 0.00231744" mass="0.0311462" diaginertia="5.11372e-05 4.89464e-05 4.95906e-06" />
+                                            <joint name="right_outer_knuckle_joint" pos="0 0 0" axis="1 0 0" limited="true" range="0 0.8" />
+                                            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" name="right_outer_knuckle_visual" mesh="robotiq_arg2f_85_outer_knuckle_vis" />
+                                            <!-- <geom type="mesh" group="0" rgba="0.792157 0.819608 0.933333 1" mesh="robotiq_arg2f_85_outer_knuckle" name="right_outer_knuckle_collision" solref="0.01 0.25" /> -->
+                                            <geom pos="0 0.0315 -0.0041" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" name="right_outer_finger_visual" mesh="robotiq_arg2f_85_outer_finger_vis" />
+                                            <!-- <geom pos="0 0.0315 -0.0041" type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_outer_finger" name="right_outer_finger_collision" solref="0.01 0.25" /> -->
+                                            <body name="right_inner_finger" pos="0 0.0376 0.043">
+                                                <inertial pos="0.000199506 0.0032692 0.00175282" quat="0.933621 0.35825 -0.00273441 0.00104851" mass="0.0156391" diaginertia="1.57977e-05 1.51089e-05 1.4647e-06" />
+                                                <joint name="right_inner_finger_joint" pos="0 0 0" axis="1 0 0" limited="true" range="-0.8757 0.8757" />
+                                                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" name="right_inner_finger_visual" mesh="robotiq_arg2f_85_inner_finger_vis" />
+                                                <!-- <geom type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_finger" name="right_inner_finger_collision" solref="0.01 0.25" /> -->
+                                                <geom size="0.011 0.003175 0.01875" pos="0 -0.0220203 0.03242" type="box" contype="1" conaffinity="1" group="1" rgba="0.9 0.9 0.9 1" name="right_fingertip_visual" solimp="0.99 0.99 0.01" solref="0.01 1"  condim="4" friction="0.8 0.8 10"/>
+                                                <!-- <geom size="0.011 0.003175 0.01875" pos="0 -0.0220203 0.03242" type="box" group="0" rgba="0.9 0.9 0.9 1" name="right_fingertip_collision" solref="0.01 0.25" /> -->
+                                                <!-- <geom size="0.010 0.001 0.01675" pos="0 -0.0245203 0.03242" type="box" group="0" name="right_fingerpad_collision" /> -->
+                                            </body>
+                                        </body>
+                                        <body name="right_inner_knuckle" pos="0 0.0127 0.06142">
+                                            <inertial pos="0.000123012 0.0507851 0.00103969" quat="0.497203 0.502496 -0.507943 0.492221" mass="0.0271177" diaginertia="2.83809e-05 2.61936e-05 2.81319e-06" />
+                                            <joint name="right_inner_knuckle_joint" pos="0 0 0" axis="1 0 0" limited="true" range="0 0.8757" />
+                                            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" name="right_inner_knuckle_visual" mesh="robotiq_arg2f_85_inner_knuckle_vis" />
+                                            <!-- <geom type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_knuckle" name="right_inner_knuckle_collision" /> -->
+                                        </body>
+                                    </body>
+
+
+
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+
+        <body name="target2" pos="0.5 0.5 0.05">
+            <joint type="free" name="target2"/>
+            <geom name="target2" type="box" size="0.02 0.02 0.05" rgba=".9 0 0 1" contype="1" conaffinity="1" solimp="0.99 0.99 0.01" solref="0.01 1" condim="4" friction="0.8 0.8 10"/>
+            <inertial pos="0 0 0" mass="0.1" diaginertia="0.1 0.1 0.1"/>
+        </body>
+<!--         <body> -->
+          <body name="bread" pos="-0.1 0.5 0.03">
+            <joint type="free" name="bread"/>
+            <geom pos="0 0 0" mesh="bread_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1"  material="bread" condim="4"/>
+          </body>
+<!--           <site rgba="0 0 0 0" size="0.005" pos="0 0 -0.045" name="bottom_site"/>
+          <site rgba="0 0 0 0" size="0.005" pos="0 0 0.03" name="top_site"/>
+          <site rgba="0 0 0 0" size="0.005" pos="0.03 0.03 0" name="horizontal_radius_site"/>
+        </body> -->
+        <body name="bottle" pos="0.3 0.5 0.065">
+            <joint type="free" name="bottle"/>
+            <geom mesh="bottle_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="glass" contype="1" conaffinity="1" condim="4"/>
+            <!-- <geom pos="0 0 0.05" mesh="bottle_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="glass" group="0"/> -->
+        </body>
+
+        <body name="coke" pos="0.4 0.5 0.04">
+            <joint type="free" name="can"/>
+            <geom mesh="can_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="coke" contype="1" conaffinity="1" condim="4"/>
+        </body>
+
+        <body name="pepsi" pos="0.6 0.5 0.04">
+            <joint type="free" name="pepsi"/>
+            <geom mesh="can_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="pepsi" contype="1" conaffinity="1" condim="4"/>
+        </body>
+
+<!--         <body>
+            <joint type="free" name="cereal"/>
+            <geom pos="0.1 0.5 0.07" mesh="cereal_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="cereal" contype="1" conaffinity="1" condim="4"/>
+        </body>
+ -->
+<!--         <body>
+            <joint type="free" name="lemon"/>
+            <geom pos="0.6 0.5 0.07" mesh="lemon_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="lemon" contype="1" conaffinity="1" condim="4"/>
+        </body> -->
+
+       <body name="milk" pos="-0.2 0.5 0.06"> 
+            <joint type="free" name="milk"/>
+            <geom mesh="milk_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="ceramic" contype="1" conaffinity="1" condim="4"/>
+        </body>
+
+<!--         <body name="sugar" pos="-0.3 0.5 0.07">
+            <joint type="free" name="sugar_box"/>
+            <geom mesh="004_sugar_box" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="004_sugar_box" contype="1" conaffinity="1" condim="4"/>
+        </body>
+ -->
+<!--         <body>
+            <joint type="free" name="002_master_chef_can"/>
+            <geom pos="-0.4 0.5 0.07" mesh="002_master_chef_can" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="002_master_chef_can" contype="1" conaffinity="1" condim="4"/>
+        </body>
+
+        <body>
+            <joint type="free" name="003_cracker_box"/>
+            <geom pos="-0.5 0.5 0.07" mesh="003_cracker_box" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="003_cracker_box" contype="1" conaffinity="1" condim="4"/>
+        </body> -->
+
+<!--         <body>
+            <joint type="free" name="005_tomato_soup_can"/>
+            <geom pos="-0.7 0.5 0.07" mesh="005_tomato_soup_can" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="005_tomato_soup_can" contype="1" conaffinity="1" condim="4"/>
+        </body> -->
+
+<!--         <body>
+            <joint type="free" name="006_mustard_bottle"/>
+            <geom pos="-0.7 0.3 0.07" mesh="006_mustard_bottle" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="006_mustard_bottle" contype="1" conaffinity="1" condim="4"/>
+        </body>
+
+        <body>
+            <joint type="free" name="007_tuna_fish_can"/>
+            <geom pos="-0.5 0.3 0.07" mesh="007_tuna_fish_can" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="007_tuna_fish_can" contype="1" conaffinity="1" condim="4"/>
+        </body>
+
+        <body>
+            <joint type="free" name="008_pudding_box"/>
+            <geom pos="-0.4 0.3 0.07" mesh="008_pudding_box" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="008_pudding_box" contype="1" conaffinity="1" condim="4"/>
+        </body>
+
+        <body>
+            <joint type="free" name="009_gelatin_box"/>
+            <geom pos="-0.3 0.3 0.07" mesh="009_gelatin_box" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="009_gelatin_box" contype="1" conaffinity="1" condim="4"/>
+        </body>
+
+        <body>
+            <joint type="free" name="010_potted_meat_can"/>
+            <geom pos="-0.2 0.3 0.07" mesh="010_potted_meat_can" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="010_potted_meat_can" contype="1" conaffinity="1" condim="4"/>
+        </body> -->
+
+<!-- https://github.com/vikashplus/YCB_sim/tree/main/meshes -->
+<!--         <body>
+            <joint type="free" name="035_power_drill"/>
+            <geom pos="-0.1 0.3 0.07" mesh="035_power_drill" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="035_power_drill" contype="1" conaffinity="1" condim="4"/>
+        </body> -->
+
+<!--         <body>
+            <joint type="free" name="plate_mat"/>
+            <geom pos="0 0 0" size="0.06 0.17 0.01" type="box" group="0" material="plate_mat" />
+            <geom pos="0.22 0 0" size="0.06 0.17 0.01" type="box" group="0" material="plate_mat" />
+            <geom pos="0.11 0.11 0" size="0.05 0.06 0.01" type="box" group="0" material="plate_mat" />
+            <geom pos="0.11 -0.11 0" size="0.05 0.06 0.01" type="box" group="0" material="plate_mat" />
+        </body>
+
+        <body>
+            <geom pos="-0.04245 0 0.0" size="0.01125 0.0225 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="smetal" />
+            <geom pos="0.04245 0 0.0" size="0.01125 0.0225 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="smetal" />
+            <geom pos="0 -0.04245 0.0" size="0.0225 0.01125 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="smetal" />
+            <geom pos="0 0.04245 0.0" size="0.0225 0.01125 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="smetal" />
+            <geom pos="-0.03 -0.03 0.0" size="0.01125 0.0225 0.01" axisangle='0 0 1 0.785398' type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="smetal" />
+            <geom pos="0.03 0.03 0.0" size="0.01125 0.0225 0.01" axisangle='0 0 1 0.785398' type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="smetal" />
+            <geom pos="0.03 -0.03 0.0" size="0.0225 0.01125 0.01" axisangle='0 0 1 0.785398' type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="smetal" />
+            <geom pos="-0.03 0.03 0.0" size="0.0225 0.01125 0.01" axisangle='0 0 1 0.785398' type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="smetal" />
+            <geom pos="0.06 0 0.0" size="0.02525 0.015875 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="smetal" />
+            <site rgba="1 0 0 1" size="0.005" pos="0.06 0 0.0" name="handle_site"/>
+            <site rgba="1 0 0 1" size="0.003" pos="0 0 0" name="center_site"/>
+        </body>
+
+        <body>
+            <geom pos="-0.03325 0 0" size="0.0105 0.04375 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.2" group="0" condim="4" material="bmetal" />
+            <geom pos="0.0 0.03325 0" size="0.03125 0.0105 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="bmetal" />
+            <geom pos="0.0 -0.03325 0" size="0.03125 0.0105 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="bmetal" />
+            <geom pos="0.03325 0 0" size="0.0105 0.04375 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="bmetal" />
+            <geom pos="0.054 0 0" size="0.02525 0.015875 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="bmetal" />
+            <site rgba="1 0 0 1" size="0.005" pos="0.054 0 0" name="handle_site_square_nut"/>
+            <site rgba="1 0 0 1" size="0.003" pos="0 0 0" name="center_site_square_nut"/>
+        </body> -->
+    </worldbody>
+
+    <actuator>
+        <motor name="joint0_motor" joint="joint0"/>
+        <motor name="joint1_motor" joint="joint1"/>
+        <motor name="joint2_motor" joint="joint2"/>
+        <motor name="joint3_motor" joint="joint3"/>
+        <motor name="joint4_motor" joint="joint4"/>
+        <motor name="joint5_motor" joint="joint5"/>
+        <motor name="finger_joint_motor" joint="finger_joint"/>
+    </actuator>
+
+    <equality>
+        <joint joint1="finger_joint" joint2="right_outer_knuckle_joint" polycoef="0 1 0 0 0"/>
+        <joint joint1="finger_joint" joint2="left_inner_knuckle_joint" polycoef="0 1 0 0 0"/>
+        <joint joint1="finger_joint" joint2="right_inner_knuckle_joint" polycoef="0 1 0 0 0"/>
+        <joint joint1="finger_joint" joint2="left_inner_finger_joint" polycoef="0 -1 0 0 0"/>
+        <joint joint1="finger_joint" joint2="right_inner_finger_joint" polycoef="0 -1 0 0 0"/>
+    </equality>
+
+</mujoco>
+
