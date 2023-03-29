@@ -12,11 +12,14 @@ import os
 import matplotlib.pyplot as plt
 from mujoco_py import MjRenderContextOffscreen
 import cv2
+import random
+import shutil
 
 
 global_target_xyz = None
 target_func_6_init = False
 target_func_4_init = False
+target_func_5_init = False
 target_func_above_target_pick_up_init = False
 target_func_place_init = False
 target_func_turn_over_init = False
@@ -271,12 +274,15 @@ class Recorder:
         d_img = d_img[::-1, :]
         d_img = np.uint16(d_img * scale)
         plt.imsave(self.id_dir + '/' + str(step) + '.png', rgb_img)
-        np.save(self.id_dir + '/' + str(step) + '_depth_map.npy', d_img)
+        # np.save(self.id_dir + '/' + str(step) + '_depth_map.npy', d_img)
 
     def record_step(self, img, state, step):
         self.save_img(img, step)
         # input()
         self.record_state(state)
+    
+    def delete_folder(self):
+        shutil.rmtree(self.id_dir)
 
 
 # Serialize numpy arrays
@@ -291,10 +297,10 @@ class NumpyEncoder(json.JSONEncoder):
 def init_env(robot_config, interface):
 
     targets = ['target2', 'coke', 'pepsi', 'milk', 'bread', 'bottle']
-    target_name = targets[np.random.randint(len(targets))]
+    target_names = random.sample(targets, 2)
 
     def target_func(interface):
-        target_xyz = interface.get_xyz(target_name)
+        target_xyz = interface.get_xyz(target_names[0])
         target_xyz[-2] -= 0.15
         target_xyz[-1] += 0.01
         target = np.hstack(
@@ -306,7 +312,7 @@ def init_env(robot_config, interface):
         return target
 
     def target_func_2(interface):
-        target_xyz = interface.get_xyz(target_name)
+        target_xyz = interface.get_xyz(target_names[0])
         target_xyz[-2] += 0.02
         target_xyz[-1] += 0.01
         target = np.hstack(
@@ -332,7 +338,7 @@ def init_env(robot_config, interface):
         global target_func_4_init
         if not target_func_4_init:
             target_xyz = interface.get_xyz("EE")
-            target_xyz[-1] = 0.2
+            target_xyz[-1] = 0.3
             global_target_xyz = target_xyz
             target_func_4_init = True
         target = np.hstack(
@@ -343,104 +349,11 @@ def init_env(robot_config, interface):
         )
         return target
 
+    
     def target_func_5(interface):
-        target_xyz = interface.get_xyz("EE")
-        target = np.hstack(
-            [
-                target_xyz + np.random.rand(3) * np.array([5, 10, 10]) - np.array([0, 5, 5]),
-                (3.14, 0, 1.57),
-            ]
-        )
-        return target
-
-    def target_func_6(interface):
         global global_target_xyz
-        global target_func_6_init
-        if not target_func_6_init:
-            target_xyz = interface.get_xyz(target_name)
-            target_xyz[-2] += 0.15
-            global_target_xyz = target_xyz
-            target_func_6_init = True
-        target = np.hstack(
-            [
-                global_target_xyz,
-                (3.14, 0, 1.57),
-            ]
-        )
-        return target
-
-    def target_func_above_target_approach(interface):
-        target_xyz = interface.get_xyz(target_name)
-        # if target_xyz[-3] < 0:
-        #     angle = (3.14, 0, 0)
-        #     target_xyz[-3] += 0.15
-        # else:
-        #     angle = (3.14, 0, -3.14)
-        #     target_xyz[-3] -= 0.15
-
-        target_xyz[-1] += 0.15
-        angle = (1.57, 3.14, 1.57)
-
-        target = np.hstack(
-            [
-                target_xyz,
-                angle
-            ]
-        )
-        return target
-
-    def target_func_joint_from_above(interface):
-        return (-0.0628, 0.405, -1.04, 0.0628, -1.57, 0, 0.8)
-
-    def target_func_joint_from_above_init(interface):
-        return (-0.0628, -0.565, -2.42, -0.314, -1.57, 0, 0.8)
-
-    def target_func_above_target_move_in(interface):
-        target_xyz = interface.get_xyz(target_name)
-
-        # target_xyz[-1] += 0.15
-        angle = (1.57, 3.14, 1.57)
-
-        target = np.hstack(
-            [
-                target_xyz,
-                angle
-            ]
-        )
-        return target
-
-    def target_func_above_target_move_in_bottle(interface):
-        target_xyz = interface.get_xyz(target_name)
-
-        target_xyz[-1] += 0.05
-        angle = (1.57, 3.14, 1.57)
-
-        target = np.hstack(
-            [
-                target_xyz,
-                angle
-            ]
-        )
-        return target
-
-    def target_func_above_target_move_in_milk(interface):
-        target_xyz = interface.get_xyz(target_name)
-
-        target_xyz[-1] += 0.04
-        angle = (1.57, 3.14, 1.57)
-
-        target = np.hstack(
-            [
-                target_xyz,
-                angle
-            ]
-        )
-        return target
-
-    def target_func_above_target_pick_up(interface):
-        global global_target_xyz
-        global target_func_above_target_pick_up_init
-        if not target_func_above_target_pick_up_init:
+        global target_func_5_init
+        if not target_func_5_init:
             target_xyz = interface.get_xyz("EE")
             target_xyz[-1] = 0.2
             global_target_xyz = target_xyz
@@ -448,7 +361,24 @@ def init_env(robot_config, interface):
         target = np.hstack(
             [
                 global_target_xyz,
-                (1.57, 3.14, 1.57),
+                (3.14, 0, 1.57),
+            ]
+        )
+        return target
+
+
+    def target_func_6(interface):
+        global global_target_xyz
+        global target_func_6_init
+        if not target_func_6_init:
+            target_xyz = interface.get_xyz(target_names[0])
+            target_xyz[-2] += 0.15
+            global_target_xyz = target_xyz
+            target_func_6_init = True
+        target = np.hstack(
+            [
+                global_target_xyz,
+                (3.14, 0, 1.57),
             ]
         )
         return target
@@ -461,7 +391,7 @@ def init_env(robot_config, interface):
             target_xyz[-2] -= 0.15
             global_target_xyz = target_xyz
             target_func_turn_over_init = True
-        target = np.hstack(
+        target = np.hstack(target_func
             [
                 global_target_xyz,
                 (1.57, 0, 1.57),
@@ -501,14 +431,30 @@ def init_env(robot_config, interface):
         )
         return target
 
-    def gripper_control_func(u, gripper):
-        u[-1] = gripper.get_gripper_status()
-        return u
+    def target_func_target2_right_above(interface):
+        target_xyz = interface.get_xyz(target_names[1])
+        target_xyz[-3] -= 0.1
+        target_xyz[-1] = 0.3
+        target = np.hstack(
+            [
+                target_xyz,
+                (3.14, 0, 1.57),
+            ]
+        )
+        return target
+        
+    def target_func_target2_right(interface):
+        target_xyz = interface.get_xyz(target_names[1])
+        target_xyz[-3] -= 0.1
+        # target_xyz[-1] += 0.01
+        target = np.hstack(
+            [
+                target_xyz,
+                (3.14, 0, 1.57),
+            ]
+        )
+        return target
 
-    def gripper_control_func_2(u, gripper):
-        gripper.set_gripper_status(0.1)
-        u[-1] = gripper.get_gripper_status()
-        return u
 
     def gripper_control_func_close(u, gripper):
         gripper.set_gripper_status(0.2)
@@ -592,17 +538,21 @@ def init_env(robot_config, interface):
         ctrlr_dof=[True, True, True, True, True, True],
     )
 
-    # ctrlr_joint = Joint(robot_config, kp=20, kv=10)
-    ctrlr_joint = Joint(
-        robot_config,
-        kp=200,
-    )
+    # # ctrlr_joint = Joint(robot_config, kp=20, kv=10)
+    # ctrlr_joint = Joint(
+    #     robot_config,
+    #     kp=200,target_func
+    # )
 
-    action_inst = np.random.randint(3)
+    # action_inst = np.random.randint(3)
+    action_inst = 0
     action_inst_dict = {
-        0: 'pick',
-        1: 'push',
-        2: 'put_down'
+        # 0: 'pick',
+        # 1: 'push',
+        # 2: 'put_down'
+        0: 'put_a_right_to_b',
+        1: 'put_a_left_to_b',
+        2: 'put_a_behind_to_b'
     }
     if action_inst == 0:
         e = Executor(interface, robot_config.START_ANGLES, -0.05)
@@ -611,12 +561,16 @@ def init_env(robot_config, interface):
         e.append(MoveTo(interface, ctrlr, target_func_2, gripper_control_func_open, error_limit=0.02))
         e.append(MoveTo(interface, ctrlr, target_func_3, gripper_control_func_close, time_limit=10))
         e.append(MoveTo(interface, ctrlr, target_func_4, gripper_control_func_close, error_limit=0.02))
+        e.append(MoveTo(interface, ctrlr, target_func_target2_right_above, gripper_control_func_close, error_limit=0.02))
+        e.append(MoveTo(interface, ctrlr, target_func_target2_right, gripper_control_func_close, error_limit=0.02))
+        e.append(MoveTo(interface, ctrlr, target_func_3, gripper_control_func_open, time_limit=5))
+        e.append(MoveTo(interface, ctrlr, target_func_5, gripper_control_func_open, error_limit=0.02))
+        
     elif action_inst == 1:
         e = Executor(interface, robot_config.START_ANGLES, -0.05)
         e.append(MoveTo(interface, ctrlr, target_func, gripper_control_func_close, error_limit=0.02))
         e.append(MoveTo(interface, ctrlr, target_func_6, gripper_control_func_close, time_limit=100))
     elif action_inst == 2:
-        print('yeah we are here')
         e = Executor(interface, robot_config.START_ANGLES, -0.05)
         e.append(MoveTo(interface, ctrlr, target_func, gripper_control_func_open, error_limit=0.02))
         e.append(MoveTo(interface, ctrlr, target_func_2, gripper_control_func_open, error_limit=0.02))
@@ -631,7 +585,7 @@ def init_env(robot_config, interface):
         exit()
 
 
-    return e, target_name, action_inst_dict[action_inst]
+    return e, target_names, action_inst_dict[action_inst]
 
 
 def rollout(executor, target_name, data_dir, data_id, action_inst):
@@ -643,6 +597,7 @@ def rollout(executor, target_name, data_dir, data_id, action_inst):
     start = True
     step = 0
     recorder.record_step(img, state, step)
+    t = 0
     while not end:
         state, img = executor.step(action)
         action, end = executor.plan_action(state)
@@ -653,10 +608,15 @@ def rollout(executor, target_name, data_dir, data_id, action_inst):
         if start == True:
             # pass
             recorder.record_step(img, state, step)
+        t += 1
+        if t > 500:
+            recorder.delete_folder()
+            return False
     recorder.save_states()
+    return True
 
 
-def collect_data(data_dir, num):
+def collect_data(data_dir, start, end):
     # Init Simulator
     robot_config = arm('ur5.xml', folder='./my_models/ur5_robotiq85_more_objs')
 
@@ -667,35 +627,40 @@ def collect_data(data_dir, num):
     # Init Offscreen Camera
     offscreen = MjRenderContextOffscreen(interface.sim, 0)
 
-    for i in range(num):
-        # Randomly place objects. Generate the executor for the certain action
-        executor, target_name, action_inst = init_env(robot_config, interface)
-        executor.offscreen = offscreen
-        global global_target_xyz
-        global target_func_4_init
-        global target_func_6_init
-        global target_func_above_target_pick_up_init
-        global target_func_place_init
-        global target_func_release_init
-        global target_func_turn_over_init
-        global_target_xyz = None
-        target_func_6_init = False
-        target_func_4_init = False
-        target_func_above_target_pick_up_init = False
-        target_func_place_init = False
-        target_func_release_init = False
-        target_func_turn_over_init = False
-
+    for i in range(start, end):
         # Rollout and record
-        rollout(executor, target_name, data_dir, i, action_inst)
+        success = False
+        while not success:
+
+            # Randomly place objects. Generate the executor for the certain action
+            executor, target_name, action_inst = init_env(robot_config, interface)
+            executor.offscreen = offscreen
+            global global_target_xyz
+            global target_func_4_init
+            global target_func_6_init
+            global target_func_5_init
+            global target_func_above_target_pick_up_init
+            global target_func_place_init
+            global target_func_release_init
+            global target_func_turn_over_init
+            global_target_xyz = None
+            target_func_6_init = False
+            target_func_4_init = False
+            target_func_5_init = False
+            target_func_above_target_pick_up_init = False
+            target_func_place_init = False
+            target_func_release_init = False
+            target_func_turn_over_init = False
+
+            success = rollout(executor, target_name, data_dir, i, action_inst)
 
 
 if __name__ == '__main__':
-    data_dir = './dataset/'    
+    data_dir = '/share/yzhou298/dataset/extended_modattn/put_right_to_2/'    
     if not os.path.isdir(data_dir):
         os.mkdir(data_dir)
     
-    collect_data(data_dir, 2400)
+    collect_data(data_dir, 1550, 3000)
 
 
 

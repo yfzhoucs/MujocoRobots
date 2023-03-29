@@ -298,7 +298,7 @@
         </body> -->
         <body name="bottle" pos="0.3 0.5 0.065">
             <joint type="free" name="bottle"/>
-            <geom mesh="bottle_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="1000" friction="0.95 0.3 0.1" material="glass" contype="1" conaffinity="1" condim="4"/>
+            <geom mesh="bottle_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="glass" contype="1" conaffinity="1" condim="4"/>
             <!-- <geom pos="0 0 0.05" mesh="bottle_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="glass" group="0"/> -->
         </body>
 
